@@ -15,6 +15,7 @@ function getResponse(apiUrl) {
         url: apiUrl,
         method: "GET"
     }).then(function(response) {
+        // TODO Test for 404 not found.
         displayLastSearched();
     });
 }
@@ -50,6 +51,7 @@ function displayLastSearched() {
     $('#search-city').val("");
     // The last item should be the current search.
     cities_searched.forEach(function (city, index) {
+        // TODO if user clicks one of these, it should parse itself and refresh the search.
         if (index === cities_searched.length - 1) {
             lastSearched.prepend('<a href="#!" class="collection-item blue active">' + city + '</a>')
         } else {
@@ -79,6 +81,7 @@ $('#search-button').click(function (event) {
         getResponse(immediateWeatherURL);
         // getResponse(forecastWeatherURL);
         // Add the city to the recently searched array and store it in local.
+        // TODO Shift this away pending status of response.
         storeCities(trimCityArray(cities_searched, searchCity));
     }
 });
