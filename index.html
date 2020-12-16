@@ -33,7 +33,10 @@
                         <form>
                             <div class="row">
                                 <div class="input-field col s11 m11 l11">
-                                    <input id="search-city" type="text" class="validate">
+<!--                                    <input id="search-city" type="text" class="validate">-->
+
+                                    <input id="search-city" onFocus="geolocate()" type="text" />
+
                                     <label for="search-city">Enter City</label>
                                     <a href="#!"><i id="search-button" class="material-icons prefix">location_searching</i></a>
                                 </div>
@@ -166,6 +169,8 @@
     <!--JavaScript at end of body for optimized loading-->
     <script type="text/javascript" src="js/materialize.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBNL20SwKe7WVmRuSmTO_W53HcAYhaYK14&callback=initAutocomplete&libraries=places&v=weekly" defer></script>
     <script type="text/javascript" src="js/script.js"></script>
 </body>
 </html>
