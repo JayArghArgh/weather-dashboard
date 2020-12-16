@@ -1,3 +1,11 @@
-.container {
-    min-height: 100vh;
+body {
+    background-color: #0D47A1;
+}
+
+.header {
+    color: #0D47A1;
+}
+
+.card .card-content {
+    padding: 5px;
 }
