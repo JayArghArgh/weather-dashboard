@@ -1,5 +1,13 @@
+h1 {
+    color: #2196f3;
+    font-family: 'Hammersmith One', sans-serif;
+    text-align: center;
+}
+
 .header {
-    color: #0D47A1;
+    border: white 1px solid;
+    border-radius: 15px;
+    margin: 5px;
 }
 
 .card .card-content {
@@ -9,4 +17,12 @@
 .btn-small.search-btn {
     padding: 2px;
     position: relative;
+}
+
+.collection {
+    /*border: 0;*/
+}
+
+.collection .collection-item{
+    border: 0;
 }

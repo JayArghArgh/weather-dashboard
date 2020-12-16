@@ -6,8 +6,10 @@
     <!--          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">-->
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <!--Import Google Icon Font-->
+    <!--Import Google Icon Font and fonts-->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Hammersmith+One&display=swap" rel="stylesheet">
     <!--Import materialize.css-->
     <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
     <link rel="stylesheet" href="css/style.css">
@@ -21,162 +23,157 @@
 
 
 
-<div class="container">
-    <div class="header blue lighten-4">
-        <div class="row">
-            <div class="col"><h1>Weather Dashboard</h1></div>
+    <div class="container">
+        <div class="header grey lighten-4">
+            <div class="row">
+                <div class="col s12"><h1><a class="btn-floating btn-large blue"><i class="material-icons">cloud</i></a> Weather Dashboard</h1></div>
+            </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="card horizontal col s12 m3 l3">
-            <div class="card-stacked">
-                <div class="card-content">
-                    <form>
-                        <div class="row">
-                            <div class="input-field col s11 m11 l11">
+        <div class="row">
+            <div class="card horizontal col s12 m3 l3">
+                <div class="card-stacked">
+                    <div class="card-content">
+                        <form>
+                            <div class="row">
+                                <div class="input-field col s11 m11 l11">
 
-                                <input id="icon_prefix" type="text" class="validate">
-                                <label for="icon_prefix">Enter City</label>
-                                <a href="#!"><i class="material-icons prefix">location_searching</i></a>
+                                    <input id="icon_prefix" type="text" class="validate">
+                                    <label for="icon_prefix">Enter City</label>
+                                    <a href="#!"><i class="material-icons prefix">location_searching</i></a>
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
 
-                    <div class="row">
-                        <div class="collection">
-                            <a href="#!" class="collection-item active">Adelaide</a>
-                            <a href="#!" class="collection-item">Melbourne</a>
-                            <a href="#!" class="collection-item">Sydney</a>
-                            <a href="#!" class="collection-item">Darwin</a>
-                            <a href="#!" class="collection-item">Canberra</a>
-                            <a href="#!" class="collection-item">Hobart</a>
-                            <a href="#!" class="collection-item">Perth</a>
-                            <a href="#!" class="collection-item">Brisbane</a>
-                            <a href="#!" class="collection-item">Oodnadatta</a>
-                            <a href="#!" class="collection-item">Morphett Vale</a>
+                        <div class="row">
+                            <div class="collection">
+                                <a href="#!" class="collection-item active blue">Adelaide</a>
+                                <a href="#!" class="collection-item blue-text">Melbourne</a>
+                                <a href="#!" class="collection-item blue-text">Sydney</a>
+                                <a href="#!" class="collection-item blue-text">Darwin</a>
+                                <a href="#!" class="collection-item blue-text">Canberra</a>
+                                <a href="#!" class="collection-item blue-text">Hobart</a>
+                                <a href="#!" class="collection-item blue-text">Perth</a>
+                                <a href="#!" class="collection-item blue-text">Brisbane</a>
+                                <a href="#!" class="collection-item blue-text">Oodnadatta</a>
+                                <a href="#!" class="collection-item blue-text">Morphett Vale</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col s12 m9 l9"> <!-- Note that "m8 l9" was added -->
-            <div class="row">
-            <!-- todays weather-->
-                <div class="col s12 m12">
-                    <div class="card horizontal">
-                        <div class="card-stacked">
-                            <div class="card-content">
-                                <h4>Adelaide 15/08/2020</h4>
-                                <div class="row">
-                                    <div class="col s12 m6 l6">
-                                        <ul>
-                                            <!-- TODO add C conversion -->
-                                            <li>Temperature: <span class="badge">90.9&deg; F</span></li>
-                                            <li>Humidity: <span class="badge">28%</span></li>
-                                            <li>Wind Speed: <span class="badge">10kts</span></li>
-                                            <li>UV Index: <span class="new badge red" data-badge-caption="">4.9</span></li>
-                                        </ul>
+            <div class="col s12 m9 l9"> <!-- Note that "m8 l9" was added -->
+                <div class="row">
+                <!-- todays weather-->
+                    <div class="col s12 m12">
+                        <div class="card horizontal">
+                            <div class="card-stacked">
+                                <div class="card-content">
+                                    <h4>Adelaide 15/08/2020</h4>
+                                    <div class="row">
+                                        <div class="col s12 m6 l6">
+                                            <h5>Location map</h5>
+                                            <img class="responsive-img z-depth-3" src="images/map_placeholder.png">
+                                        </div>
+
+                                        <div class="col s12 m6 l6">
+                                            <h5>Weather details</h5>
+                                            <ul class="collection collection-weather z-depth-3">
+                                                <!-- TODO add C conversion -->
+                                                <li class="collection-item">Temperature: <span class="new badge blue" data-badge-caption="">90.9&deg; F</span></li>
+                                                <li class="collection-item">Humidity: <span class="new badge blue" data-badge-caption="">28%</span></li>
+                                                <li class="collection-item">Wind Speed: <span class="new badge blue" data-badge-caption="">10kts</span></li>
+                                                <li class="collection-item">UV Index: <span class="new badge red" data-badge-caption="">4.9</span></li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Weather cards -->
-            <h4>6 day forecast</h4>
-            <div class="row">
+                <!-- Weather cards -->
+                <h4>5 day forecast</h4>
+                <div class="row">
 
-                <div class="col s12 m2 l2">
-                    <div class="card horizontal">
-                        <div class="card-stacked">
-                            <div class="card-content">
-                                <ul>
-                                    <li>8/6/19</li>
-                                    <li>temp</li>
-                                    <li>humidity</li>
-                                </ul>
+                    <!-- to make it a six day forecast, remove the offset form the first div-->
+                    <div class="col s12 m2 l2 offset-l1 offset-m1">
+                        <div class="card horizontal">
+                            <div class="card-stacked">
+                                <div class="card-content">
+                                    <ul>
+                                        <li>8/6/19</li>
+                                        <li>temp</li>
+                                        <li>humidity</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col s12 m2 l2">
-                    <div class="card horizontal">
-                        <div class="card-stacked">
-                            <div class="card-content">
-                                <ul>
-                                    <li>8/6/19</li>
-                                    <li>temp</li>
-                                    <li>humidity</li>
-                                </ul>
+                    <div class="col s12 m2 l2">
+                        <div class="card horizontal">
+                            <div class="card-stacked">
+                                <div class="card-content">
+                                    <ul>
+                                        <li>8/6/19</li>
+                                        <li>temp</li>
+                                        <li>humidity</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col s12 m2 l2">
-                    <div class="card horizontal">
-                        <div class="card-stacked">
-                            <div class="card-content">
-                                <ul>
-                                    <li>8/6/19</li>
-                                    <li>temp</li>
-                                    <li>humidity</li>
-                                </ul>
+                    <div class="col s12 m2 l2">
+                        <div class="card horizontal">
+                            <div class="card-stacked">
+                                <div class="card-content">
+                                    <ul>
+                                        <li>8/6/19</li>
+                                        <li>temp</li>
+                                        <li>humidity</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col s12 m2 l2">
-                    <div class="card horizontal">
-                        <div class="card-stacked">
-                            <div class="card-content">
-                                <ul>
-                                    <li>8/6/19</li>
-                                    <li>temp</li>
-                                    <li>humidity</li>
-                                </ul>
+                    <div class="col s12 m2 l2">
+                        <div class="card horizontal">
+                            <div class="card-stacked">
+                                <div class="card-content">
+                                    <ul>
+                                        <li>8/6/19</li>
+                                        <li>temp</li>
+                                        <li>humidity</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col s12 m2 l2">
-                    <div class="card horizontal">
-                        <div class="card-stacked">
-                            <div class="card-content">
-                                <ul>
-                                    <li>8/6/19</li>
-                                    <li>temp</li>
-                                    <li>humidity</li>
-                                </ul>
+                    <div class="col s12 m2 l2">
+                        <div class="card horizontal">
+                            <div class="card-stacked">
+                                <div class="card-content">
+                                    <ul>
+                                        <li>8/6/19</li>
+                                        <li>temp</li>
+                                        <li>humidity</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="col s12 m2 l2">
-                    <div class="card horizontal">
-                        <div class="card-stacked">
-                            <div class="card-content">
-                                <ul>
-                                    <li>8/6/19</li>
-                                    <li>temp</li>
-                                    <li>humidity</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
                 </div>
-
             </div>
         </div>
     </div>
-</div>
+
+
 
 
     <!--JavaScript at end of body for optimized loading-->

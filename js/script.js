@@ -22,6 +22,5 @@ function getResponse(apiUrl) {
     });
 }
 
-getResponse(queryURL);
-getResponse(queryForecastURL);
-
+// getResponse(queryURL);
+// getResponse(queryForecastURL);
