@@ -1,26 +1,67 @@
-const API_KEY = "3e6428fa21f3a15117a8b5558c08b036";
-let queryURL = "https://api.openweathermap.org/data/2.5/weather?";
-let queryForecastURL = "https://api.openweathermap.org/data/2.5/forecast?";
-
-let city_name = "adelaide";
-let state_code = "sa";
-let country_code = "au";
-
-// Construct the URLs
-queryURL += "q=" + city_name + "," + state_code +"," + country_code;
-queryForecastURL += "q=" + city_name;
-queryURL += "&appid=" + API_KEY;
-queryForecastURL += "&appid=" + API_KEY;
+"use strict";
+// Constants
+const API_KEY = "&appid=3e6428fa21f3a15117a8b5558c08b036";
+const API_WEATHER_URL = "https://api.openweathermap.org/data/2.5/weather?q=";
+const API_FORECAST_URL = "https://api.openweathermap.org/data/2.5/forecast?q=";
+const KEY_CITY = "weather_cities_searched";
+const SEARCH_LIMIT = 10;
+// Variables
+let cities_searched = [];
 
 
+// Functions
 function getResponse(apiUrl) {
     $.ajax({
         url: apiUrl,
         method: "GET"
     }).then(function(response) {
-        console.log(response);
+        $('#search-button').click(function (event) {
+            event.preventDefault();
+            // Trim the user input and set the variable we'll use.
+            let searchCity = $.trim($('#search-city').val());
+
+            // Only proceed if there's a value. Build the URL.
+            if (searchCity) {
+                let immediateWeatherURL = API_WEATHER_URL + searchCity + API_KEY;
+                let forecastWeatherURL = API_FORECAST_URL + searchCity + API_KEY;
+                // Get the immediate and forecast weather reports.
+                getResponse(immediateWeatherURL);
+                // getResponse(forecastWeatherURL);
+                // Add the city to the recently searched array and store it in local.
+                storeCities(trimCityArray(cities_searched, searchCity));
+            }
+        });
     });
 }
 
-// getResponse(queryURL);
-// getResponse(queryForecastURL);
+function storeCities(cityArrayToStore) {
+    // Updates local storage.
+    localStorage.setItem(KEY_CITY, JSON.stringify(cities_searched));
+}
+
+function retrieveCities() {
+    // Retrieves locally stored cities.
+    if (localStorage.getItem(KEY_CITY)) {
+        return JSON.parse(localStorage.getItem(KEY_CITY));
+    } else {
+        return false;
+    }
+}
+
+function trimCityArray(cityArrayToTrim, cityToAdd) {
+    // keeps the recent searches to the limited amount.
+    if (cityArrayToTrim.length +1 > SEARCH_LIMIT) {
+        cityArrayToTrim.shift();
+    }
+    // add the new item
+    cityArrayToTrim.push(cityToAdd);
+    return cityArrayToTrim;
+}
+
+// Statements
+// load cities
+if (retrieveCities()) {
+    cities_searched = retrieveCities();
+}
+
+
