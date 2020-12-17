@@ -12,7 +12,6 @@ const SEARCH_LIMIT = 10;  // The number of searches to store in local.
 const WEATHER = "weather";
 const FORECAST = "forecast";
 const UVI = "uvi";
-const LOCATION = "location";
 
 // Variables
 let cities_searched = [];
@@ -49,10 +48,23 @@ function initAutocomplete() {
 function setCity() {
     // Get the place details from the autocomplete object. and set the global variable.
     const place = autocomplete.getPlace();
+
+    let setState = "";
+    let setCountry = "";
+
+    // Flush out the state and Country from the administrative areas.
+    place.address_components.forEach(function (placeItem) {
+        if (placeItem.types[0] === "administrative_area_level_1") {
+            setState = placeItem.short_name;
+        } else if (placeItem.types[0] === "country") {
+            setCountry = placeItem.short_name;
+        }
+    });
+
     city_lookup_details = [
         place.address_components[0].long_name,
-        place.address_components[1].short_name,
-        place.address_components[2].short_name
+        setState,
+        setCountry,
     ]
 }
 
@@ -151,13 +163,19 @@ function displayLastSearched() {
     $('#search-city').val("");
     // The last item should be the current search.
     cities_searched.forEach(function (city, index) {
-        // TODO if user clicks one of these, it should parse itself and refresh the search.
+        let cityItem = $('<a href="#!">');
         if (index === cities_searched.length - 1) {
-            lastSearched.prepend('<a href="#!" class="collection-item blue active">' + city[0] + '</a>')
+            cityItem.addClass("collection-item city blue active");
         } else {
-            // Everything else is standard.
-            lastSearched.prepend('<a href="#!" class="collection-item blue-text">' + city[0] + '</a>')
+            cityItem.addClass("collection-item city blue-text");
         }
+        // console.log(city)
+        cityItem.text(city[0]);
+        cityItem.attr("data-city", city[0]);
+        cityItem.attr("data-state", city[1]);
+        cityItem.attr("data-country", city[2]);
+        lastSearched.prepend(cityItem);
+        // TODO if user clicks one of these, it should parse itself and refresh the search.
     });
 }
 
@@ -183,4 +201,15 @@ $('#search-button').click(function (event) {
     storeCities(trimCityArray(cities_searched, city_lookup_details));
 });
 
+
+$('.city').click(function (event){
+    event.preventDefault();
+    console.log("repeated");
+    // TODO this is only working for one single click :/
+    city_lookup_details = [$(this).attr("data-city"), $(this).attr("data-state"), $(this).attr("data-country")];
+    getWeatherResponse("", WEATHER);
+    getWeatherResponse("", FORECAST);
+    console.log(city_lookup_details);
+    storeCities(trimCityArray(cities_searched, city_lookup_details));
+});
 
