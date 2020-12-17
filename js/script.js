@@ -8,6 +8,7 @@ const API_FORECAST_CODE = "forecast?q=";
 const API_UVI_CODE = "uvi?";
 const KEY_CITY = "weather_cities_searched";
 const SEARCH_LIMIT = 10;  // The number of searches to store in local.
+const FORECAST_LIMIT = 5;  // The number of daily forecast cards to display.
 // These are required here to avoid typos when validating the values.
 const WEATHER = "weather";
 const FORECAST = "forecast";
@@ -48,7 +49,6 @@ function initAutocomplete() {
 function setCity() {
     // Get the place details from the autocomplete object. and set the global variable.
     const place = autocomplete.getPlace();
-
     let setState = "";
     let setCountry = "";
 
@@ -91,7 +91,7 @@ function getWeatherResponse(city, expectation) {
     // TODO this needs to be tidied up, the city parameter is only used for UVI lat lon lookup.
     // The API is hit in 3 different locations. This function handles all three.
     let apiUrl;
-    let apiUrlExtension =  + city_lookup_details[0] + "," + city_lookup_details[1] + "," + city_lookup_details[2] + API_KEY;
+    let apiUrlExtension = city_lookup_details[0] + "," + city_lookup_details[1] + "," + city_lookup_details[2] + API_KEY;
     // Adjust the url pending the required result. (Weather, forecast, or UV lookup)
     switch (expectation) {
         case WEATHER:
@@ -111,7 +111,6 @@ function getWeatherResponse(city, expectation) {
         url: apiUrl,
         method: "GET"
     }).then(function(response) {
-        // TODO Test for 404 not found.
         if (expectation === WEATHER) {
             // Get the weather results, and store them in a global dictionary.
             displayLastSearched();
@@ -127,7 +126,7 @@ function getWeatherResponse(city, expectation) {
             updateWeatherStats(weatherStats.temp, weatherStats.humidity, weatherStats.speed, response.value);
         } else if (expectation === FORECAST) {
             // Simply get the required forecast information for six days.
-            console.log(FORECAST);
+            displayForecast(response.list);
         }
     });
 }
@@ -169,7 +168,6 @@ function displayLastSearched() {
         } else {
             cityItem.addClass("collection-item city blue-text");
         }
-        // console.log(city)
         cityItem.text(city[0]);
         cityItem.attr("data-city", city[0]);
         cityItem.attr("data-state", city[1]);
@@ -185,6 +183,54 @@ function updateWeatherStats(temp, humidity, speed, uvindex) {
     $('#knots').text(speed);
     $('#uvi').text(uvindex);
 }
+
+function displayForecast(forecast) {
+    // Apply an offset and get the weather for midday each day.
+    // TODO this is too hardcoded.
+    let fcCounter = 0;
+    forecast.forEach(function (item, index) {
+        if (index % 8 === 0) {
+
+            // console.log(item);
+
+            let fcDivOffset = "offset-l1 offset-m1";
+            let fcDiv = $('<div>').addClass("col s12 m2 l2");
+            let cardHz = $('<div>').addClass("card horizontal");
+            let cardStacked = $('<div>').addClass("card-stacked");
+            let cardContent = $('<div>').addClass("card-content");
+            let fcList = $('<ul>');
+
+            // Offset the first element as we're fitting 5 items in a col-12
+            // TODO This needs to be done dynamically.
+            if (fcCounter === 0) {
+                fcDiv.addClass(fcDivOffset);
+            }
+            var tempDate = item.dt_txt;
+            tempDate = tempDate.split(" ")[0];
+            tempDate = moment(tempDate, 'YYYY/MM/dd');
+            console.log(tempDate);
+            console.log("date", moment().format('MM/DD/YYYY'));
+
+            // console.log(moment(tempDate).format("d/MM/YYYY"));
+            // tempDate = tempDate.format("d/MM/YYYY");
+            // console.log(tempDate);
+
+            fcList.append($('<li>').text(tempDate));
+            fcList.append($('<li>').text(item.main.temp_max));
+            fcList.append($('<li>').text(item[2]));
+
+            cardContent.append(fcList);
+            cardStacked.append(cardContent);
+            cardHz.append(cardStacked);
+            fcDiv.append(cardHz);
+            $('#forecast-container').append(fcDiv);
+
+            fcCounter += 1;
+
+        }
+    });
+}
+
 
 // Statements
 // load cities
@@ -204,12 +250,9 @@ $('#search-button').click(function (event) {
 
 $('.city').click(function (event){
     event.preventDefault();
-    console.log("repeated");
     // TODO this is only working for one single click :/
     city_lookup_details = [$(this).attr("data-city"), $(this).attr("data-state"), $(this).attr("data-country")];
     getWeatherResponse("", WEATHER);
     getWeatherResponse("", FORECAST);
-    console.log(city_lookup_details);
     storeCities(trimCityArray(cities_searched, city_lookup_details));
 });
-
