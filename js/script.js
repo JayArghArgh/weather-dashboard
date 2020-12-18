@@ -15,6 +15,8 @@ const FORECAST_LIMIT = 5;  // The number of daily forecast cards to display.
 const WEATHER = "weather";
 const FORECAST = "forecast";
 const UVI = "uvi";
+const IND_CEL = "C&deg;";
+const IND_FAR = "F&deg;";
 
 // Variables
 let cities_searched = [];
@@ -151,7 +153,6 @@ function getWeatherResponse(city, expectation) {
         if (expectation === WEATHER) {
             // Get the weather results, and store them in a global dictionary.
             displayLastSearched();
-            console.log(response);
             weatherStats.temp = response.main.temp;
             weatherStats.humidity = response.main.humidity;
             weatherStats.speed = response.wind.speed;
@@ -218,13 +219,18 @@ function displayLastSearched() {
 
 function updateWeatherStats(temp, humidity, speed, uvindex) {
     // Updates the weather stats for the main day weather.
-    $('#deg-f').html(temp + "&deg;");
-    $('#humidity').text(humidity + "%");
+    // TODO this needs be set based on the position of the toggle.
+    $('#deg-f').html('<span class="temp-change-units">' + temp + '</span> <span class="unit-indicator-deg">F</span>');
+    $('#humidity').text(humidity);
     $('#knots').text(speed);
     $('#uvi').text(uvindex);
 }
 
-function updateTempUnits() {
+function updateUnitIndicator(unitDiv, newIndicator) {
+    return $(unitDiv).html(newIndicator);
+}
+
+function updateTempUnit() {
     // If user toggles button after the search, we still need to change the units displayed.
     let tempHolder = $('.temp-change-units');
     let i =0;
@@ -233,10 +239,12 @@ function updateTempUnits() {
         // convert to Celsius.
         if (temp_c) {
             newTemp = fToDeg($(tempHolder[i]).text());
-            console.log(newTemp);
+            updateUnitIndicator($(tempHolder[i]).siblings(), IND_CEL);
+
         } else {
             // Convert to Farenheit.
             newTemp = dToFar($(tempHolder[i]).text());
+            updateUnitIndicator($(tempHolder[i]).siblings(), IND_FAR);
         }
         // Update the span with the new values.
         $(tempHolder[i]).text(Math.round(newTemp * 10) / 10);
@@ -322,9 +330,9 @@ $('.city').click(function (event){
 $('#temp-units').click(function (event){
     if (temp_c) {
         temp_c = false;
-        updateTempUnits();
     } else {
         temp_c = true;
-        updateTempUnits();
     }
+    updateTempUnit();
+    updateUnitIndicator();
 })
