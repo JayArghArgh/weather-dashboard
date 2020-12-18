@@ -14,6 +14,9 @@ const WEATHER = "weather";
 const FORECAST = "forecast";
 const UVI = "uvi";
 
+// For the map
+const MAP_ZOOM_LEVEL = 9;
+
 // Variables
 let cities_searched = [];
 let weatherStats = {temp: 0, humidity: 0, speed: 0};
@@ -87,6 +90,25 @@ function geolocate() {
 }
 
 
+// Initialize and add the map
+function initMap(centreLat, centreLon) {
+    console.log("mapping");
+    // Centre over the city that was searched for
+    const citySearched = { lat: centreLat, lng: centreLon };
+    // The map, centered at the city seached for.
+    const map = new google.maps.Map(document.getElementById("map"), {
+        zoom: MAP_ZOOM_LEVEL,
+        center: citySearched,
+    });
+    // The marker, positioned at the city searched for
+    // TODO Replace with weather icon.
+    const marker = new google.maps.Marker({
+        position: citySearched,
+        map: map,
+    });
+}
+
+
 function getWeatherResponse(city, expectation) {
     // TODO this needs to be tidied up, the city parameter is only used for UVI lat lon lookup.
     // The API is hit in 3 different locations. This function handles all three.
@@ -119,6 +141,7 @@ function getWeatherResponse(city, expectation) {
             weatherStats.speed = response.wind.speed;
             // Fire off the lat lon off and get the uv index.
             getWeatherResponse([response.coord.lat, response.coord.lon], UVI);
+            initMap(response.coord.lat, response.coord.lon);
         } else if (expectation === UVI) {
             // Get the UV Index
             weatherStats.uvindex = response.value;
