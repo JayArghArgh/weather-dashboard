@@ -34,11 +34,7 @@
                         <form>
                             <div class="row">
                                 <div class="input-field col search-entry s11 m11 l11">
-<!--                                    <input id="search-city" type="text" class="validate">-->
-
                                     <input id="search-city" class="validate" onFocus="geolocate()" type="text" />
-
-<!--                                    <label for="search-city">Enter City</label>-->
                                     <a href="#!"><i id="search-button" class="material-icons prefix">location_searching</i></a>
                                 </div>
                             </div>
@@ -75,9 +71,9 @@
                                             <h5>Weather details</h5>
                                             <div class="row">
                                                 <div class="switch col s12 m12 l12">
-                                                    <label >
+                                                    <label>
                                                         F&deg;
-                                                        <input type="checkbox">
+                                                        <input type="checkbox" id="temp-units">
                                                         <span class="lever"></span>
                                                         C&deg;
                                                     </label>

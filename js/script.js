@@ -2,10 +2,12 @@
 // Constants
 const API_KEY = "&appid=3e6428fa21f3a15117a8b5558c08b036";
 const API_URL = "https://api.openweathermap.org/data/2.5/";
-const API_KEY_G_PLACES = "AIzaSyDDqTXIJDEbYWvg8V30Au2gIdtTMX5R9dI";
+// const API_KEY_G_PLACES = "AIzaSyDDqTXIJDEbYWvg8V30Au2gIdtTMX5R9dI";
 const API_WEATHER_CODE = "weather?q=";
 const API_FORECAST_CODE = "forecast?q=";
 const API_UVI_CODE = "uvi?";
+const API_UNITS_C = "&units=metric";
+const API_UNITS_F = "&units=imperial";
 const KEY_CITY = "weather_cities_searched";
 const SEARCH_LIMIT = 10;  // The number of searches to store in local.
 const FORECAST_LIMIT = 5;  // The number of daily forecast cards to display.
@@ -14,26 +16,25 @@ const WEATHER = "weather";
 const FORECAST = "forecast";
 const UVI = "uvi";
 
-// For the map
-const MAP_ZOOM_LEVEL = 9;
-
 // Variables
 let cities_searched = [];
 let weatherStats = {temp: 0, humidity: 0, speed: 0};
 let city_lookup_details;
-
-let placeSearch;
 let autocomplete;
-const componentForm = {
-    street_number: "short_name",
-    route: "long_name",
-    locality: "long_name",
-    administrative_area_level_1: "short_name",
-    country: "long_name",
-    postal_code: "short_name",
-};
+let temp_c = false;  // when true, temperature units are displayed in degrees C.
+let temp_c_searched = false;
+
+// For the map
+const MAP_ZOOM_LEVEL = 9;
+
 
 // Functions
+function fToDeg(tempF){
+// *Screams in Artillery* "I need these results in Celsius you muppet!!!"
+    let tempC = (tempF - 32) * (5 / 9);
+    return tempC;
+}
+
 function initAutocomplete() {
     // Create the autocomplete object, restricting the search predictions to
     // geographical location types.
@@ -92,7 +93,6 @@ function geolocate() {
 
 // Initialize and add the map
 function initMap(centreLat, centreLon) {
-    console.log("mapping");
     // Centre over the city that was searched for
     const citySearched = { lat: centreLat, lng: centreLon };
     // The map, centered at the city seached for.
@@ -114,6 +114,17 @@ function getWeatherResponse(city, expectation) {
     // The API is hit in 3 different locations. This function handles all three.
     let apiUrl;
     let apiUrlExtension = city_lookup_details[0] + "," + city_lookup_details[1] + "," + city_lookup_details[2] + API_KEY;
+
+    // Determine the units being used for the search and parse to API.
+    if (temp_c) {
+        apiUrlExtension += API_UNITS_C;
+        // record that we searched for temp c.Or when we do dynamic conversion on the data, it will double convert to celsius.
+        temp_c_searched = true;
+    } else {
+        apiUrlExtension += API_UNITS_F;
+        temp_c_searched = false;
+    }
+
     // Adjust the url pending the required result. (Weather, forecast, or UV lookup)
     switch (expectation) {
         case WEATHER:
@@ -136,6 +147,7 @@ function getWeatherResponse(city, expectation) {
         if (expectation === WEATHER) {
             // Get the weather results, and store them in a global dictionary.
             displayLastSearched();
+            console.log(response);
             weatherStats.temp = response.main.temp;
             weatherStats.humidity = response.main.humidity;
             weatherStats.speed = response.wind.speed;
@@ -201,10 +213,26 @@ function displayLastSearched() {
 }
 
 function updateWeatherStats(temp, humidity, speed, uvindex) {
-    $('#deg-f').html(temp + "&deg;F");
+    // Updates the weather stats for the main day weather.
+    // if (temp_c && !temp_c_searched) {
+    //     $('#deg-f').html(fToDeg(temp) + "&deg;");
+    // } else {
+    //     $('#deg-f').html(temp + "&deg;");
+    // }
+    $('#deg-f').html(temp + "&deg;");
     $('#humidity').text(humidity + "%");
     $('#knots').text(speed);
     $('#uvi').text(uvindex);
+}
+
+function updateTempUnits() {
+    let tempHolders = ["#deg-f"];
+    tempHolders.forEach(function (item){
+        // TODO extract the number from the value.
+        let currentTemp = $(item).val();
+        console.log(currentTemp);
+        $(item).text(currentTemp);
+    })
 }
 
 function displayForecast(forecast) {
@@ -282,3 +310,16 @@ $('.city').click(function (event){
     getWeatherResponse("", FORECAST);
     storeCities(trimCityArray(cities_searched, city_lookup_details));
 });
+
+$('#temp-units').click(function (event){
+    if (temp_c) {
+        temp_c = false;
+        console.log(temp_c);
+        updateTempUnits();
+    } else {
+        temp_c = true;
+        console.log(temp_c);
+    }
+})
+
+fToDeg(134);
