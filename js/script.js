@@ -22,7 +22,7 @@ let weatherStats = {temp: 0, humidity: 0, speed: 0};
 let city_lookup_details;
 let autocomplete;
 let temp_c = false;  // when true, temperature units are displayed in degrees C.
-let temp_c_searched = false;
+let temp_c_searched = false;  // We need to know if the user searched in C / F
 
 // For the map
 const MAP_ZOOM_LEVEL = 9;
@@ -30,9 +30,13 @@ const MAP_ZOOM_LEVEL = 9;
 
 // Functions
 function fToDeg(tempF){
-// *Screams in Artillery* "I need these results in Celsius you muppet!!!"
-    let tempC = (tempF - 32) * (5 / 9);
-    return tempC;
+    // *Screams in Artillery* "I need these results in Celsius you muppet!!!"
+    return (tempF - 32) * (5 / 9);
+}
+
+function dToFar(tempC){
+    // Converts Celsius to Fahrenheit for those that need big numbers.
+    return tempC * (9 / 5) + 32;
 }
 
 function initAutocomplete() {
@@ -214,11 +218,6 @@ function displayLastSearched() {
 
 function updateWeatherStats(temp, humidity, speed, uvindex) {
     // Updates the weather stats for the main day weather.
-    // if (temp_c && !temp_c_searched) {
-    //     $('#deg-f').html(fToDeg(temp) + "&deg;");
-    // } else {
-    //     $('#deg-f').html(temp + "&deg;");
-    // }
     $('#deg-f').html(temp + "&deg;");
     $('#humidity').text(humidity + "%");
     $('#knots').text(speed);
@@ -226,13 +225,22 @@ function updateWeatherStats(temp, humidity, speed, uvindex) {
 }
 
 function updateTempUnits() {
-    let tempHolders = ["#deg-f"];
-    tempHolders.forEach(function (item){
-        // TODO extract the number from the value.
-        let currentTemp = $(item).val();
-        console.log(currentTemp);
-        $(item).text(currentTemp);
-    })
+    // If user toggles button after the search, we still need to change the units displayed.
+    let tempHolder = $('.temp-change-units');
+    let i =0;
+    let newTemp;
+    for ( i; i < tempHolder.length; i++){
+        // convert to Celsius.
+        if (temp_c) {
+            newTemp = fToDeg($(tempHolder[i]).text());
+            console.log(newTemp);
+        } else {
+            // Convert to Farenheit.
+            newTemp = dToFar($(tempHolder[i]).text());
+        }
+        // Update the span with the new values.
+        $(tempHolder[i]).text(Math.round(newTemp * 10) / 10);
+    }
 }
 
 function displayForecast(forecast) {
@@ -268,7 +276,7 @@ function displayForecast(forecast) {
 
             // Construct the list item.
             fcList.append($('<li>').text(tempDate));
-            fcList.append($('<li>').text(item.main.temp_max));
+            fcList.append($('<li>').html('<span class="temp-change-units">' + item.main.temp_max + "</span>"));
             fcList.append($('<li>').text(item[2]));
 
             // Construct the forecast card.
@@ -314,12 +322,9 @@ $('.city').click(function (event){
 $('#temp-units').click(function (event){
     if (temp_c) {
         temp_c = false;
-        console.log(temp_c);
         updateTempUnits();
     } else {
         temp_c = true;
-        console.log(temp_c);
+        updateTempUnits();
     }
 })
-
-fToDeg(134);
