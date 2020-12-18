@@ -26,3 +26,8 @@ h1 {
 .collection .collection-item{
     border: 0;
 }
+
+.input-field.col.search-entry {
+    padding: 0;
+    margin: 0;
+}

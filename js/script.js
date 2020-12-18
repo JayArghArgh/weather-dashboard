@@ -192,6 +192,7 @@ function displayForecast(forecast) {
     $('#forecast-container').empty();
 
     forecast.forEach(function (item, index) {
+        // TODO Rethink how to achieve the weather here, with max and mins.
         if (index % 8 === 0) {
 
             let fcDivOffset = "offset-l1 offset-m1";
