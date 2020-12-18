@@ -188,10 +188,11 @@ function displayForecast(forecast) {
     // Apply an offset and get the weather for midday each day.
     // TODO this is too hardcoded.
     let fcCounter = 0;
+    // Empty the forecast container
+    $('#forecast-container').empty();
+
     forecast.forEach(function (item, index) {
         if (index % 8 === 0) {
-
-            // console.log(item);
 
             let fcDivOffset = "offset-l1 offset-m1";
             let fcDiv = $('<div>').addClass("col s12 m2 l2");
@@ -205,26 +206,27 @@ function displayForecast(forecast) {
             if (fcCounter === 0) {
                 fcDiv.addClass(fcDivOffset);
             }
+
+            // Extract and format the date.
+            // TODO Find out why moment ws too painful for this simple string. #blamingTheTools!
             var tempDate = item.dt_txt;
             tempDate = tempDate.split(" ")[0];
-            tempDate = moment(tempDate, 'YYYY/MM/dd');
-            console.log(tempDate);
-            console.log("date", moment().format('MM/DD/YYYY'));
+            tempDate = tempDate.split("-");
+            tempDate = tempDate[2] + "/" + tempDate[1] + "/" +tempDate[0]
 
-            // console.log(moment(tempDate).format("d/MM/YYYY"));
-            // tempDate = tempDate.format("d/MM/YYYY");
-            // console.log(tempDate);
-
+            // Construct the list item.
             fcList.append($('<li>').text(tempDate));
             fcList.append($('<li>').text(item.main.temp_max));
             fcList.append($('<li>').text(item[2]));
 
+            // Construct the forecast card.
             cardContent.append(fcList);
             cardStacked.append(cardContent);
             cardHz.append(cardStacked);
             fcDiv.append(cardHz);
             $('#forecast-container').append(fcDiv);
 
+            // Tick the counter over.
             fcCounter += 1;
 
         }
