@@ -108,10 +108,10 @@ function initMap(centreLat, centreLon) {
         zoom: MAP_ZOOM_LEVEL,
         center: citySearched,
         disableDefaultUI: true,
+        gestureHandling: "none",
+        zoomControl: false,
     });
     // The marker, positioned at the city searched for
-    // TODO Replace with weather icon.
-    //
     const marker = new google.maps.Marker({
         position: citySearched,
         map: map,
@@ -230,7 +230,13 @@ function updateWeatherStats(temp, humidity, speed, uvindex, iconToUse) {
     $('.city-title').text(city_lookup_details[0] + " " + moment().format("(DD/MM/YYYY)"));
     $('.weather-icon').html('<img src="' + ICON_BASE +  iconToUse + '.png" alt="weather icon">');
     // Updates the weather stats for the main day weather.
-    $('#deg-f').html('<span class="temp-change-units">' + temp + '</span> <span class="unit-indicator-deg">F</span>');
+    $('#deg-f').html('<span class="temp-change-units">' + temp + '</span> ');
+    // start with the correctt temperature indicator
+    if (temp_c) {
+        $('#deg-f').append('<span className="unit-indicator-deg">C</span>');
+    } else {
+        $('#deg-f').append('<span class="unit-indicator-deg">F</span>');
+    }
     $('#humidity').text(humidity);
     $('#knots').text(speed);
     $('#uvi').text(uvindex);
@@ -257,7 +263,8 @@ function updateTempUnit() {
             updateUnitIndicator($(tempHolder[i]).siblings(), IND_FAR);
         }
         // Update the span with the new values.
-        $(tempHolder[i]).text(Math.round(newTemp * 10) / 10);
+        $(tempHolder[i]).text(Math.round(newTemp * 100) / 100);
+
     }
 }
 
