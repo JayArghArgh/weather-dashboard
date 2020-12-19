@@ -17,6 +17,7 @@ const FORECAST = "forecast";
 const UVI = "uvi";
 const IND_CEL = "C&deg;";
 const IND_FAR = "F&deg;";
+const ICON_BASE = 'http://openweathermap.org/img/wn/';
 
 // Variables
 let cities_searched = [];
@@ -25,6 +26,7 @@ let city_lookup_details;
 let autocomplete;
 let temp_c = false;  // when true, temperature units are displayed in degrees C.
 let temp_c_searched = false;  // We need to know if the user searched in C / F
+
 
 // For the map
 const MAP_ZOOM_LEVEL = 9;
@@ -98,8 +100,7 @@ function geolocate() {
 
 
 // Initialize and add the map
-function initMap(centreLat, centreLon, iconToUse) {
-    console.log(iconToUse);
+function initMap(centreLat, centreLon) {
     // Centre over the city that was searched for
     const citySearched = { lat: centreLat, lng: centreLon };
     // The map, centered at the city seached for.
@@ -110,11 +111,11 @@ function initMap(centreLat, centreLon, iconToUse) {
     });
     // The marker, positioned at the city searched for
     // TODO Replace with weather icon.
-    var iconBase = 'http://openweathermap.org/img/wn/';
+    //
     const marker = new google.maps.Marker({
         position: citySearched,
         map: map,
-        icon: iconBase + '10d@2x.png'
+        // icon: iconBase + iconToUse + '.png'
     });
 }
 
@@ -155,19 +156,21 @@ function getWeatherResponse(city, expectation) {
         method: "GET"
     }).then(function(response) {
         if (expectation === WEATHER) {
+            console.log(response);
             // Get the weather results, and store them in a global dictionary.
             displayLastSearched();
             weatherStats.temp = response.main.temp;
             weatherStats.humidity = response.main.humidity;
             weatherStats.speed = response.wind.speed;
+            weatherStats.icon = response.weather[0].icon;
             // Fire off the lat lon off and get the uv index.
             getWeatherResponse([response.coord.lat, response.coord.lon], UVI);
-            initMap(response.coord.lat, response.coord.lon, response.weather.icon);
+            initMap(response.coord.lat, response.coord.lon);
         } else if (expectation === UVI) {
             // Get the UV Index
             weatherStats.uvindex = response.value;
             // Compile all the stats required for the days weather, and update the page.
-            updateWeatherStats(weatherStats.temp, weatherStats.humidity, weatherStats.speed, response.value);
+            updateWeatherStats(weatherStats.temp, weatherStats.humidity, weatherStats.speed, response.value, weatherStats.icon);
         } else if (expectation === FORECAST) {
             // Simply get the required forecast information for six days.
             displayForecast(response.list);
@@ -221,9 +224,12 @@ function displayLastSearched() {
     });
 }
 
-function updateWeatherStats(temp, humidity, speed, uvindex) {
+function updateWeatherStats(temp, humidity, speed, uvindex, iconToUse) {
+    // Update the title information.
+    // TODO this can be done neater.
+    $('.city-title').text(city_lookup_details[0] + " " + moment().format("(DD/MM/YYYY)"));
+    $('.weather-icon').html('<img src="' + ICON_BASE +  iconToUse + '.png" alt="weather icon">');
     // Updates the weather stats for the main day weather.
-    // TODO this needs be set based on the position of the toggle.
     $('#deg-f').html('<span class="temp-change-units">' + temp + '</span> <span class="unit-indicator-deg">F</span>');
     $('#humidity').text(humidity);
     $('#knots').text(speed);
