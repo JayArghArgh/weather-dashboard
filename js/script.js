@@ -21,11 +21,10 @@ const ICON_BASE = 'http://openweathermap.org/img/wn/';
 
 // Variables
 let cities_searched = [];
-let weatherStats = {temp: 0, humidity: 0, speed: 0};
+let weatherStats = {temp: 0, humidity: 0, speed: 0, lat: 0, lon: 0};
 let city_lookup_details;
 let autocomplete;
 let temp_c = false;  // when true, temperature units are displayed in degrees C.
-let temp_c_searched = false;  // We need to know if the user searched in C / F
 
 
 // For the map
@@ -73,6 +72,8 @@ function setCity() {
         }
     });
 
+    console.log(place);
+
     city_lookup_details = [
         place.address_components[0].long_name,
         setState,
@@ -100,9 +101,9 @@ function geolocate() {
 
 
 // Initialize and add the map
-function initMap(centreLat, centreLon) {
+function initMap() {
     // Centre over the city that was searched for
-    const citySearched = { lat: centreLat, lng: centreLon };
+    const citySearched = { lat: weatherStats.lat, lng: weatherStats.lon };
     // The map, centered at the city seached for.
     const map = new google.maps.Map(document.getElementById("map"), {
         zoom: MAP_ZOOM_LEVEL,
@@ -115,12 +116,11 @@ function initMap(centreLat, centreLon) {
     const marker = new google.maps.Marker({
         position: citySearched,
         map: map,
-        // icon: iconBase + iconToUse + '.png'
     });
 }
 
 
-function getWeatherResponse(city, expectation) {
+function getWeatherResponse(expectation) {
     // TODO this needs to be tidied up, the city parameter is only used for UVI lat lon lookup.
     // The API is hit in 3 different locations. This function handles all three.
     let apiUrl;
@@ -129,24 +129,23 @@ function getWeatherResponse(city, expectation) {
     // Determine the units being used for the search and parse to API.
     if (temp_c) {
         apiUrlExtension += API_UNITS_C;
-        // record that we searched for temp c.Or when we do dynamic conversion on the data, it will double convert to celsius.
-        temp_c_searched = true;
     } else {
         apiUrlExtension += API_UNITS_F;
-        temp_c_searched = false;
     }
 
     // Adjust the url pending the required result. (Weather, forecast, or UV lookup)
     switch (expectation) {
         case WEATHER:
+            // Get todays weather
             apiUrl = API_URL + API_WEATHER_CODE + apiUrlExtension;
             break;
         case FORECAST:
+            // Get five day forecast
             apiUrl = API_URL + API_FORECAST_CODE + apiUrlExtension;
             break;
         case UVI:
-            // UV requires lat lon in place of city. These are parsed back to this function as an array in the city parameter.
-            apiUrl = API_URL + API_UVI_CODE + "lat=" + city[0] + "&lon=" + city[1] + API_KEY;
+            // Get the UV Index
+            apiUrl = API_URL + API_UVI_CODE + "lat=" + weatherStats.lat + "&lon=" + weatherStats.lon + API_KEY;
             break;
     }
 
@@ -156,16 +155,17 @@ function getWeatherResponse(city, expectation) {
         method: "GET"
     }).then(function(response) {
         if (expectation === WEATHER) {
-            console.log(response);
             // Get the weather results, and store them in a global dictionary.
             displayLastSearched();
             weatherStats.temp = response.main.temp;
             weatherStats.humidity = response.main.humidity;
             weatherStats.speed = response.wind.speed;
             weatherStats.icon = response.weather[0].icon;
+            weatherStats.lat = response.coord.lat;
+            weatherStats.lon = response.coord.lon;
             // Fire off the lat lon off and get the uv index.
-            getWeatherResponse([response.coord.lat, response.coord.lon], UVI);
-            initMap(response.coord.lat, response.coord.lon);
+            getWeatherResponse(UVI);
+            initMap();
         } else if (expectation === UVI) {
             // Get the UV Index
             weatherStats.uvindex = response.value;
@@ -329,18 +329,19 @@ if (retrieveCities()) {
 $('#search-button').click(function (event) {
     event.preventDefault();
     // Get the immediate and forecast weather reports.
-    getWeatherResponse("", WEATHER);
-    getWeatherResponse("", FORECAST);
+    getWeatherResponse(WEATHER);
+    getWeatherResponse(FORECAST);
     storeCities(trimCityArray(cities_searched, city_lookup_details));
 });
 
 
 $('.city').click(function (event){
     event.preventDefault();
+    console.log(city_lookup_details);
     // TODO this is only working for one single click :/
-    city_lookup_details = [$(this).attr("data-city"), $(this).attr("data-state"), $(this).attr("data-country")];
-    getWeatherResponse("", WEATHER);
-    getWeatherResponse("", FORECAST);
+    // city_lookup_details = [$(this).attr("data-city"), $(this).attr("data-state"), $(this).attr("data-country")];
+    getWeatherResponse(WEATHER);
+    getWeatherResponse(FORECAST);
     storeCities(trimCityArray(cities_searched, city_lookup_details));
 });
 
