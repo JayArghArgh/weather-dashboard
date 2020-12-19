@@ -1,6 +1,6 @@
 "use strict";
 // Constants
-const API_KEY = "&appid=3e6428fa21f3a15117a8b5558c08b036";
+// const API_KEY = "&appid=3e6428fa21f3a15117a8b5558c08b036";
 const API_URL = "https://api.openweathermap.org/data/2.5/";
 const API_WEATHER_CODE = "weather?q=";
 const API_FORECAST_CODE = "forecast?q=";
