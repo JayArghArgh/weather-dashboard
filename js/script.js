@@ -98,19 +98,23 @@ function geolocate() {
 
 
 // Initialize and add the map
-function initMap(centreLat, centreLon) {
+function initMap(centreLat, centreLon, iconToUse) {
+    console.log(iconToUse);
     // Centre over the city that was searched for
     const citySearched = { lat: centreLat, lng: centreLon };
     // The map, centered at the city seached for.
     const map = new google.maps.Map(document.getElementById("map"), {
         zoom: MAP_ZOOM_LEVEL,
         center: citySearched,
+        disableDefaultUI: true,
     });
     // The marker, positioned at the city searched for
     // TODO Replace with weather icon.
+    var iconBase = 'http://openweathermap.org/img/wn/';
     const marker = new google.maps.Marker({
         position: citySearched,
         map: map,
+        icon: iconBase + '10d@2x.png'
     });
 }
 
@@ -158,7 +162,7 @@ function getWeatherResponse(city, expectation) {
             weatherStats.speed = response.wind.speed;
             // Fire off the lat lon off and get the uv index.
             getWeatherResponse([response.coord.lat, response.coord.lon], UVI);
-            initMap(response.coord.lat, response.coord.lon);
+            initMap(response.coord.lat, response.coord.lon, response.weather.icon);
         } else if (expectation === UVI) {
             // Get the UV Index
             weatherStats.uvindex = response.value;

@@ -39,3 +39,9 @@ h1 {
     width: 100%;
     /* The width is the width of the web page */
 }
+
+#map {
+    border: white 1px solid;
+    border-radius: 15px;
+    margin: 5px;
+}
