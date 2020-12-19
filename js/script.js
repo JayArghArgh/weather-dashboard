@@ -2,7 +2,6 @@
 // Constants
 const API_KEY = "&appid=3e6428fa21f3a15117a8b5558c08b036";
 const API_URL = "https://api.openweathermap.org/data/2.5/";
-// const API_KEY_G_PLACES = "AIzaSyDDqTXIJDEbYWvg8V30Au2gIdtTMX5R9dI";
 const API_WEATHER_CODE = "weather?q=";
 const API_FORECAST_CODE = "forecast?q=";
 const API_UVI_CODE = "uvi?";
@@ -10,7 +9,6 @@ const API_UNITS_C = "&units=metric";
 const API_UNITS_F = "&units=imperial";
 const KEY_CITY = "weather_cities_searched";
 const SEARCH_LIMIT = 10;  // The number of searches to store in local.
-const FORECAST_LIMIT = 5;  // The number of daily forecast cards to display.
 // These are required here to avoid typos when validating the values.
 const WEATHER = "weather";
 const FORECAST = "forecast";
@@ -25,6 +23,8 @@ let weatherStats = {temp: 0, humidity: 0, speed: 0, lat: 0, lon: 0};
 let city_lookup_details;
 let autocomplete;
 let temp_c = false;  // when true, temperature units are displayed in degrees C.
+
+let lastSearchDisplayed = false;
 
 
 // For the map
@@ -72,8 +72,6 @@ function setCity() {
         }
     });
 
-    console.log(place);
-
     city_lookup_details = [
         place.address_components[0].long_name,
         setState,
@@ -119,7 +117,6 @@ function initMap() {
     });
 }
 
-
 function getWeatherResponse(expectation) {
     // TODO this needs to be tidied up, the city parameter is only used for UVI lat lon lookup.
     // The API is hit in 3 different locations. This function handles all three.
@@ -156,7 +153,6 @@ function getWeatherResponse(expectation) {
     }).then(function(response) {
         if (expectation === WEATHER) {
             // Get the weather results, and store them in a global dictionary.
-            displayLastSearched();
             weatherStats.temp = response.main.temp;
             weatherStats.humidity = response.main.humidity;
             weatherStats.speed = response.wind.speed;
@@ -203,6 +199,7 @@ function trimCityArray(cityArrayToTrim, cityToAdd) {
 }
 
 function displayLastSearched() {
+    console.log("last searched");
     // Display the last searched cities for the user, in reverse order.
     let lastSearched = $('#last-searched');
     lastSearched.empty();
@@ -216,12 +213,21 @@ function displayLastSearched() {
             cityItem.addClass("collection-item city blue-text");
         }
         cityItem.text(city[0]);
-        cityItem.attr("data-city", city[0]);
-        cityItem.attr("data-state", city[1]);
-        cityItem.attr("data-country", city[2]);
         lastSearched.prepend(cityItem);
-        // TODO if user clicks one of these, it should parse itself and refresh the search.
+
+        $('.city').click(function (event){
+            event.stopPropagation();
+            // TODO this is only working for one single click :/
+            // event.preventDefault();
+            city_lookup_details = [city[0], city[1], city[2]];
+            getWeatherResponse(WEATHER);
+            getWeatherResponse(FORECAST);
+            storeCities(trimCityArray(cities_searched, city_lookup_details));
+        });
+
     });
+
+
 }
 
 function updateWeatherStats(temp, humidity, speed, uvindex, iconToUse) {
@@ -231,7 +237,7 @@ function updateWeatherStats(temp, humidity, speed, uvindex, iconToUse) {
     $('.weather-icon').html('<img src="' + ICON_BASE +  iconToUse + '.png" alt="weather icon">');
     // Updates the weather stats for the main day weather.
     $('#deg-f').html('<span class="temp-change-units">' + temp + '</span> ');
-    // start with the correctt temperature indicator
+    // start with the correct temperature indicator
     if (temp_c) {
         $('#deg-f').append('<span className="unit-indicator-deg">C</span>');
     } else {
@@ -313,7 +319,6 @@ function displayForecast(forecast) {
 
             // Tick the counter over.
             fcCounter += 1;
-
         }
     });
 }
@@ -323,7 +328,6 @@ function displayForecast(forecast) {
 // load cities
 if (retrieveCities()) {
     cities_searched = retrieveCities();
-    displayLastSearched();
 }
 
 $('#search-button').click(function (event) {
@@ -335,16 +339,6 @@ $('#search-button').click(function (event) {
 });
 
 
-$('.city').click(function (event){
-    event.preventDefault();
-    console.log(city_lookup_details);
-    // TODO this is only working for one single click :/
-    // city_lookup_details = [$(this).attr("data-city"), $(this).attr("data-state"), $(this).attr("data-country")];
-    getWeatherResponse(WEATHER);
-    getWeatherResponse(FORECAST);
-    storeCities(trimCityArray(cities_searched, city_lookup_details));
-});
-
 $('#temp-units').click(function (event){
     if (temp_c) {
         temp_c = false;
@@ -354,3 +348,5 @@ $('#temp-units').click(function (event){
     updateTempUnit();
     updateUnitIndicator();
 })
+
+displayLastSearched();
