@@ -224,10 +224,7 @@ function displayLastSearched() {
             getWeatherResponse(FORECAST);
             storeCities(trimCityArray(cities_searched, city_lookup_details));
         });
-
     });
-
-
 }
 
 function updateWeatherStats(temp, humidity, speed, uvindex, iconToUse) {
@@ -249,11 +246,12 @@ function updateWeatherStats(temp, humidity, speed, uvindex, iconToUse) {
 }
 
 function updateUnitIndicator(unitDiv, newIndicator) {
+    // Simply updates the units indicator C/F
     return $(unitDiv).html(newIndicator);
 }
 
 function updateTempUnit() {
-    // If user toggles button after the search, we still need to change the units displayed.
+    // Changes the temperature units for the user.
     let tempHolder = $('.temp-change-units');
     let i =0;
     let newTemp;
@@ -270,7 +268,6 @@ function updateTempUnit() {
         }
         // Update the span with the new values.
         $(tempHolder[i]).text(Math.round(newTemp * 100) / 100);
-
     }
 }
 
@@ -328,6 +325,7 @@ function displayForecast(forecast) {
 // load cities
 if (retrieveCities()) {
     cities_searched = retrieveCities();
+    // displayLastSearched();
 }
 
 $('#search-button').click(function (event) {
@@ -349,4 +347,5 @@ $('#temp-units').click(function (event){
     updateUnitIndicator();
 })
 
+// this is being snafu.
 displayLastSearched();
