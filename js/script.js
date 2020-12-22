@@ -1,6 +1,6 @@
 "use strict";
 // Constants
-// const API_KEY = "&appid=3e6428fa21f3a15117a8b5558c08b036";
+const API_KEY = "&appid=3e6428fa21f3a15117a8b5558c08b036";
 const API_URL = "https://api.openweathermap.org/data/2.5/";
 const API_WEATHER_CODE = "weather?q=";
 const API_FORECAST_CODE = "forecast?q=";
@@ -51,7 +51,7 @@ function initAutocomplete() {
     );
     // Avoid paying for data that you don't need by restricting the set of
     // place fields that are returned to just the address components.
-    autocomplete.setFields(["address_component"]);
+    autocomplete.setFields(["address_component", "geometry"]);
     // When the user selects an address from the drop-down, populate the
     // address fields in the form.
     autocomplete.addListener("place_changed", setCity);
@@ -62,6 +62,10 @@ function setCity() {
     const place = autocomplete.getPlace();
     let setState = "";
     let setCountry = "";
+
+    // console.log(place.geometry);
+    console.log(place.geometry.location.lat());
+    console.log(place.geometry.location.lng());
 
     // Flush out the state and Country from the administrative areas.
     place.address_components.forEach(function (placeItem) {
@@ -117,6 +121,11 @@ function initMap() {
     });
 }
 
+function getWeatherResponse_() {
+    let apiUrl = "https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}" + API_KEY;
+    // let apiUrl = "https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude={part}" + API_KEY;
+}
+
 function getWeatherResponse(expectation) {
     // TODO this needs to be tidied up, the city parameter is only used for UVI lat lon lookup.
     // The API is hit in 3 different locations. This function handles all three.
@@ -162,6 +171,7 @@ function getWeatherResponse(expectation) {
             // Fire off the lat lon off and get the uv index.
             getWeatherResponse(UVI);
             initMap();
+            console.log("WEATHER0");
         } else if (expectation === UVI) {
             // Get the UV Index
             weatherStats.uvindex = response.value;
