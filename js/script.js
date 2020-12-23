@@ -1,7 +1,9 @@
 "use strict";
 // Constants
+// For the map
+const MAP_ZOOM_LEVEL = 9;
 const API_KEY = "&appid=3e6428fa21f3a15117a8b5558c08b036";
-const API_URL = "https://api.openweathermap.org/data/2.5/";
+const API_URL = "https://api.openweathermap.org/data/2.5/onecall?";
 const API_UNITS_C = "&units=metric";
 const API_UNITS_F = "&units=imperial";
 const KEY_CITY = "weather_cities_searched";
@@ -17,11 +19,6 @@ let city_lookup_details;
 let autocomplete;
 let temp_c = false;  // when true, temperature units are displayed in degrees C.
 
-let lastSearchDisplayed = false;
-
-
-// For the map
-const MAP_ZOOM_LEVEL = 9;
 
 
 // Functions
@@ -114,7 +111,9 @@ function initMap() {
 }
 
 function getWeatherResponse() {
-    let apiUrl = "https://api.openweathermap.org/data/2.5/onecall?lat=" + city_lookup_details[3] + "&lon=" + city_lookup_details[4];
+    // Build the URL and collect the weather response.
+    let apiUrl = API_URL + "lat=" + city_lookup_details[3] + "&lon=" + city_lookup_details[4];
+
     // Determine the units being used for the search and parse to API.
     if (temp_c) {
         apiUrl += API_UNITS_C;
@@ -123,7 +122,7 @@ function getWeatherResponse() {
     }
     apiUrl += API_KEY;
 
-    // The Ajax query itself.
+    // Collect the response.
     $.ajax({
         url: apiUrl,
         method: "GET"
@@ -134,6 +133,9 @@ function getWeatherResponse() {
         let forecastDetails = response.daily;
         updateWeatherStats(weatherDetails);
         displayForecast(forecastDetails);
+        storeCities(city_lookup_details);
+        cities_searched = retrieveCities();
+        displayLastSearched();
     });
 }
 
@@ -170,7 +172,15 @@ function displayLastSearched() {
         } else {
             cityItem.addClass("collection-item city blue-text");
         }
+        // Build the item that contains the city lookup data.
         cityItem.text(city[0]);
+        cityItem.data("data-city", city[0])
+        cityItem.data("data-state", city[1])
+        cityItem.data("data-country", city[2])
+        cityItem.data("data-lat", city[3])
+        cityItem.data("data-lon", city[4])
+
+        // prepend it so it is on to of the lsit.
         lastSearched.prepend(cityItem);
     });
 }
@@ -272,16 +282,13 @@ function displayForecast(forecast) {
 
 // Statements
 // load cities
-if (retrieveCities()) {
-    cities_searched = retrieveCities();
-    console.log(cities_searched);
-}
+cities_searched = retrieveCities();
+displayLastSearched();
 
 $('#search-button').click(function (event) {
     event.preventDefault();
     // Get the weather.
     getWeatherResponse();
-    storeCities(city_lookup_details);
 });
 
 
@@ -296,12 +303,16 @@ $('#temp-units').click(function (event){
 })
 
 $('.city').click(function (event){
-    event.stopPropagation();
     // TODO this is only working for one single click :/
     event.preventDefault();
-    city_lookup_details = [city[0], city[1], city[2], city[3], city[4]];
+    let thisCityItem = $(this);
+    // Grab the items lookup data so the search can be refreshed by simply clicking the item.
+    city_lookup_details = [
+        thisCityItem.data("data-city"),
+        thisCityItem.data("data-state"),
+        thisCityItem.data("data-country"),
+        thisCityItem.data("data-lat"),
+        thisCityItem.data("data-lon")
+    ];
     getWeatherResponse();
-    storeCities(city_lookup_details);
 });
-
-displayLastSearched();
