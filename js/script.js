@@ -63,10 +63,6 @@ function setCity() {
     let setState = "";
     let setCountry = "";
 
-    // console.log(place.geometry);
-    console.log(place.geometry.location.lat());
-    console.log(place.geometry.location.lng());
-
     // Flush out the state and Country from the administrative areas.
     place.address_components.forEach(function (placeItem) {
         if (placeItem.types[0] === "administrative_area_level_1") {
@@ -80,7 +76,11 @@ function setCity() {
         place.address_components[0].long_name,
         setState,
         setCountry,
+        place.geometry.location.lat(),
+        place.geometry.location.lng()
     ]
+
+    console.log(city_lookup_details);
 }
 
 // Bias the autocomplete object to the user's geographical location,
@@ -105,7 +105,7 @@ function geolocate() {
 // Initialize and add the map
 function initMap() {
     // Centre over the city that was searched for
-    const citySearched = { lat: weatherStats.lat, lng: weatherStats.lon };
+    const citySearched = { lat: city_lookup_details[3], lng: city_lookup_details[4] };
     // The map, centered at the city seached for.
     const map = new google.maps.Map(document.getElementById("map"), {
         zoom: MAP_ZOOM_LEVEL,
@@ -122,8 +122,16 @@ function initMap() {
 }
 
 function getWeatherResponse_() {
-    let apiUrl = "https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}" + API_KEY;
-    // let apiUrl = "https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&exclude={part}" + API_KEY;
+    let apiUrl = "https://api.openweathermap.org/data/2.5/onecall?lat=" + city_lookup_details[3] + "&lon=" + city_lookup_details[4] + API_KEY;
+    // &exclude={part}
+    // The Ajax query itself.
+    $.ajax({
+        url: apiUrl,
+        method: "GET"
+    }).then(function(response) {
+        initMap();
+        console.log(response);
+    });
 }
 
 function getWeatherResponse(expectation) {
@@ -341,9 +349,10 @@ if (retrieveCities()) {
 $('#search-button').click(function (event) {
     event.preventDefault();
     // Get the immediate and forecast weather reports.
-    getWeatherResponse(WEATHER);
-    getWeatherResponse(FORECAST);
-    storeCities(trimCityArray(cities_searched, city_lookup_details));
+    getWeatherResponse_();
+    // getWeatherResponse(WEATHER);
+    // getWeatherResponse(FORECAST);
+    // storeCities(trimCityArray(cities_searched, city_lookup_details));
 });
 
 
@@ -358,4 +367,4 @@ $('#temp-units').click(function (event){
 })
 
 // this is being snafu.
-displayLastSearched();
+// displayLastSearched();
