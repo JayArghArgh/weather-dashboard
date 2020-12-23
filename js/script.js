@@ -1,6 +1,6 @@
 "use strict";
 // Constants
-// const API_KEY = "&appid=3e6428fa21f3a15117a8b5558c08b036";
+const API_KEY = "&appid=3e6428fa21f3a15117a8b5558c08b036";
 const API_URL = "https://api.openweathermap.org/data/2.5/";
 const API_WEATHER_CODE = "weather?q=";
 const API_FORECAST_CODE = "forecast?q=";
@@ -9,6 +9,7 @@ const API_UNITS_C = "&units=metric";
 const API_UNITS_F = "&units=imperial";
 const KEY_CITY = "weather_cities_searched";
 const SEARCH_LIMIT = 10;  // The number of searches to store in local.
+const MAX_FORECAST_DAYS = 5;
 // These are required here to avoid typos when validating the values.
 const WEATHER = "weather";
 const FORECAST = "forecast";
@@ -19,7 +20,6 @@ const ICON_BASE = 'http://openweathermap.org/img/wn/';
 
 // Variables
 let cities_searched = [];
-let weatherStats = {temp: 0, humidity: 0, speed: 0, lat: 0, lon: 0};
 let city_lookup_details;
 let autocomplete;
 let temp_c = false;  // when true, temperature units are displayed in degrees C.
@@ -51,7 +51,7 @@ function initAutocomplete() {
     );
     // Avoid paying for data that you don't need by restricting the set of
     // place fields that are returned to just the address components.
-    autocomplete.setFields(["address_component"]);
+    autocomplete.setFields(["address_component", "geometry"]);
     // When the user selects an address from the drop-down, populate the
     // address fields in the form.
     autocomplete.addListener("place_changed", setCity);
@@ -76,7 +76,11 @@ function setCity() {
         place.address_components[0].long_name,
         setState,
         setCountry,
+        place.geometry.location.lat(),
+        place.geometry.location.lng()
     ]
+
+    // console.log(city_lookup_details);
 }
 
 // Bias the autocomplete object to the user's geographical location,
@@ -101,7 +105,7 @@ function geolocate() {
 // Initialize and add the map
 function initMap() {
     // Centre over the city that was searched for
-    const citySearched = { lat: weatherStats.lat, lng: weatherStats.lon };
+    const citySearched = { lat: city_lookup_details[3], lng: city_lookup_details[4] };
     // The map, centered at the city seached for.
     const map = new google.maps.Map(document.getElementById("map"), {
         zoom: MAP_ZOOM_LEVEL,
@@ -117,60 +121,27 @@ function initMap() {
     });
 }
 
-function getWeatherResponse(expectation) {
-    // TODO this needs to be tidied up, the city parameter is only used for UVI lat lon lookup.
-    // The API is hit in 3 different locations. This function handles all three.
-    let apiUrl;
-    let apiUrlExtension = city_lookup_details[0] + "," + city_lookup_details[1] + "," + city_lookup_details[2] + API_KEY;
-
+function getWeatherResponse() {
+    let apiUrl = "https://api.openweathermap.org/data/2.5/onecall?lat=" + city_lookup_details[3] + "&lon=" + city_lookup_details[4];
+    // &exclude={part}
     // Determine the units being used for the search and parse to API.
     if (temp_c) {
-        apiUrlExtension += API_UNITS_C;
+        apiUrl += API_UNITS_C;
     } else {
-        apiUrlExtension += API_UNITS_F;
+        apiUrl += API_UNITS_F;
     }
-
-    // Adjust the url pending the required result. (Weather, forecast, or UV lookup)
-    switch (expectation) {
-        case WEATHER:
-            // Get todays weather
-            apiUrl = API_URL + API_WEATHER_CODE + apiUrlExtension;
-            break;
-        case FORECAST:
-            // Get five day forecast
-            apiUrl = API_URL + API_FORECAST_CODE + apiUrlExtension;
-            break;
-        case UVI:
-            // Get the UV Index
-            apiUrl = API_URL + API_UVI_CODE + "lat=" + weatherStats.lat + "&lon=" + weatherStats.lon + API_KEY;
-            break;
-    }
+    apiUrl += API_KEY;
 
     // The Ajax query itself.
     $.ajax({
         url: apiUrl,
         method: "GET"
     }).then(function(response) {
-        if (expectation === WEATHER) {
-            // Get the weather results, and store them in a global dictionary.
-            weatherStats.temp = response.main.temp;
-            weatherStats.humidity = response.main.humidity;
-            weatherStats.speed = response.wind.speed;
-            weatherStats.icon = response.weather[0].icon;
-            weatherStats.lat = response.coord.lat;
-            weatherStats.lon = response.coord.lon;
-            // Fire off the lat lon off and get the uv index.
-            getWeatherResponse(UVI);
-            initMap();
-        } else if (expectation === UVI) {
-            // Get the UV Index
-            weatherStats.uvindex = response.value;
-            // Compile all the stats required for the days weather, and update the page.
-            updateWeatherStats(weatherStats.temp, weatherStats.humidity, weatherStats.speed, response.value, weatherStats.icon);
-        } else if (expectation === FORECAST) {
-            // Simply get the required forecast information for six days.
-            displayForecast(response.list);
-        }
+        initMap();
+        let weatherDetails = response.current;
+        let forecastDetails = response.daily;
+        updateWeatherStats(weatherDetails.temp, weatherDetails.humidity, weatherDetails.wind_speed, weatherDetails.uvi, weatherDetails.weather[0].icon);
+        displayForecast(forecastDetails);
     });
 }
 
@@ -233,16 +204,22 @@ function updateWeatherStats(temp, humidity, speed, uvindex, iconToUse) {
     $('.city-title').text(city_lookup_details[0] + " " + moment().format("(DD/MM/YYYY)"));
     $('.weather-icon').html('<img src="' + ICON_BASE +  iconToUse + '.png" alt="weather icon">');
     // Updates the weather stats for the main day weather.
-    $('#deg-f').html('<span class="temp-change-units">' + temp + '</span> ');
+    $('#deg-f').html('<span class="temp-change-units">' + temp + '</span> ' + selectUnitIndicator());
     // start with the correct temperature indicator
-    if (temp_c) {
-        $('#deg-f').append('<span className="unit-indicator-deg">C</span>');
-    } else {
-        $('#deg-f').append('<span class="unit-indicator-deg">F</span>');
-    }
-    $('#humidity').text(humidity);
+    $('#humidity').text(humidity + "%");
     $('#knots').text(speed);
     $('#uvi').text(uvindex);
+}
+
+function selectUnitIndicator() {
+    // Returns the correct unit indicator ie F / C
+    let unitIndicator;
+    if (temp_c) {
+        unitIndicator = '<span className="unit-indicator-deg">C</span>';
+    } else {
+        unitIndicator = '<span class="unit-indicator-deg">F</span>';
+    }
+    return unitIndicator;
 }
 
 function updateUnitIndicator(unitDiv, newIndicator) {
@@ -272,52 +249,49 @@ function updateTempUnit() {
 }
 
 function displayForecast(forecast) {
+    console.log(forecast);
     // Apply an offset and get the weather for midday each day.
     // TODO this is too hardcoded.
-    let fcCounter = 0;
+    let fcCounter = 1;
     // Empty the forecast container
-    $('#forecast-container').empty();
+    let forecastContainer = $('#forecast-container');
+    forecastContainer.empty();
 
-    forecast.forEach(function (item, index) {
-        // TODO Rethink how to achieve the weather here, with max and mins.
-        if (index % 8 === 0) {
+    while (fcCounter < MAX_FORECAST_DAYS + 1) {
+        let item = forecast[fcCounter];
+        let fcDivOffset = "offset-l1 offset-m1";
+        let fcDiv = $('<div>').addClass("col s12 m2 l2");
+        let cardHz = $('<div>').addClass("card horizontal");
+        let cardStacked = $('<div>').addClass("card-stacked");
+        let cardContent = $('<div>').addClass("card-content");
+        let fcList = $('<ul>');
 
-            let fcDivOffset = "offset-l1 offset-m1";
-            let fcDiv = $('<div>').addClass("col s12 m2 l2");
-            let cardHz = $('<div>').addClass("card horizontal");
-            let cardStacked = $('<div>').addClass("card-stacked");
-            let cardContent = $('<div>').addClass("card-content");
-            let fcList = $('<ul>');
-
-            // Offset the first element as we're fitting 5 items in a col-12
-            // TODO This needs to be done dynamically.
-            if (fcCounter === 0) {
-                fcDiv.addClass(fcDivOffset);
-            }
-
-            // Extract and format the date.
-            // TODO Find out why moment ws too painful for this simple string. #blamingTheTools!
-            var tempDate = item.dt_txt;
-            tempDate = tempDate.split(" ")[0];
-            tempDate = tempDate.split("-");
-            tempDate = tempDate[2] + "/" + tempDate[1] + "/" +tempDate[0]
-
-            // Construct the list item.
-            fcList.append($('<li>').text(tempDate));
-            fcList.append($('<li>').html('<span class="temp-change-units">' + item.main.temp_max + "</span>"));
-            fcList.append($('<li>').text(item[2]));
-
-            // Construct the forecast card.
-            cardContent.append(fcList);
-            cardStacked.append(cardContent);
-            cardHz.append(cardStacked);
-            fcDiv.append(cardHz);
-            $('#forecast-container').append(fcDiv);
-
-            // Tick the counter over.
-            fcCounter += 1;
+        // Offset the first element as we're fitting 5 items in a col-12
+        // TODO This needs to be done dynamically.
+        if (fcCounter === 1) {
+            fcDiv.addClass(fcDivOffset);
         }
-    });
+
+        // Extract and format the date.
+        // TODO Find out why moment ws too painful for this simple string. #blamingTheTools!
+        var tempDate = item.dt;
+        tempDate = moment.unix(tempDate).format("MM/DD/YYYY");
+        // Construct the list item.
+        fcList.append($('<li>').text(tempDate));
+        fcList.append($('<img src="' + ICON_BASE + item.weather[0].icon + '.png">'));
+        fcList.append($('<li>').html('<span class="temp-change-units">' + item.temp.max + "</span>" + selectUnitIndicator()));
+        fcList.append($('<li>').text("Humidity " + item.humidity + " %"));
+
+        // Construct the forecast card.
+        cardContent.append(fcList);
+        cardStacked.append(cardContent);
+        cardHz.append(cardStacked);
+        fcDiv.append(cardHz);
+        forecastContainer.append(fcDiv);
+
+        // Tick the counter over.
+         fcCounter ++;
+    }
 }
 
 
@@ -331,9 +305,8 @@ if (retrieveCities()) {
 $('#search-button').click(function (event) {
     event.preventDefault();
     // Get the immediate and forecast weather reports.
-    getWeatherResponse(WEATHER);
-    getWeatherResponse(FORECAST);
-    storeCities(trimCityArray(cities_searched, city_lookup_details));
+    getWeatherResponse();
+    // storeCities(trimCityArray(cities_searched, city_lookup_details));
 });
 
 
@@ -348,4 +321,4 @@ $('#temp-units').click(function (event){
 })
 
 // this is being snafu.
-displayLastSearched();
+// displayLastSearched();
