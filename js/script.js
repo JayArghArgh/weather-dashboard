@@ -2,18 +2,11 @@
 // Constants
 const API_KEY = "&appid=3e6428fa21f3a15117a8b5558c08b036";
 const API_URL = "https://api.openweathermap.org/data/2.5/";
-const API_WEATHER_CODE = "weather?q=";
-const API_FORECAST_CODE = "forecast?q=";
-const API_UVI_CODE = "uvi?";
 const API_UNITS_C = "&units=metric";
 const API_UNITS_F = "&units=imperial";
 const KEY_CITY = "weather_cities_searched";
 const SEARCH_LIMIT = 10;  // The number of searches to store in local.
 const MAX_FORECAST_DAYS = 5;
-// These are required here to avoid typos when validating the values.
-const WEATHER = "weather";
-const FORECAST = "forecast";
-const UVI = "uvi";
 const IND_CEL = "C&deg;";
 const IND_FAR = "F&deg;";
 const ICON_BASE = 'http://openweathermap.org/img/wn/';
@@ -80,7 +73,6 @@ function setCity() {
         place.geometry.location.lng()
     ]
 
-    // console.log(city_lookup_details);
 }
 
 // Bias the autocomplete object to the user's geographical location,
@@ -123,7 +115,6 @@ function initMap() {
 
 function getWeatherResponse() {
     let apiUrl = "https://api.openweathermap.org/data/2.5/onecall?lat=" + city_lookup_details[3] + "&lon=" + city_lookup_details[4];
-    // &exclude={part}
     // Determine the units being used for the search and parse to API.
     if (temp_c) {
         apiUrl += API_UNITS_C;
@@ -138,15 +129,21 @@ function getWeatherResponse() {
         method: "GET"
     }).then(function(response) {
         initMap();
+        // Send to build today's weather report and the x day forecast.
         let weatherDetails = response.current;
         let forecastDetails = response.daily;
-        updateWeatherStats(weatherDetails.temp, weatherDetails.humidity, weatherDetails.wind_speed, weatherDetails.uvi, weatherDetails.weather[0].icon);
+        updateWeatherStats(weatherDetails);
         displayForecast(forecastDetails);
     });
 }
 
 function storeCities(cityArrayToStore) {
     // Updates local storage.
+    // Check we're not over the limit, pop if we are.
+    if (cities_searched.length === SEARCH_LIMIT) {
+        cities_searched.pop();
+    }
+    // Add the new item and store.
     cities_searched.push(cityArrayToStore);
     localStorage.setItem(KEY_CITY, JSON.stringify(cities_searched));
 }
@@ -161,7 +158,6 @@ function retrieveCities() {
 }
 
 function displayLastSearched() {
-    console.log("last searched");
     // Display the last searched cities for the user, in reverse order.
     let lastSearched = $('#last-searched');
     lastSearched.empty();
@@ -176,30 +172,19 @@ function displayLastSearched() {
         }
         cityItem.text(city[0]);
         lastSearched.prepend(cityItem);
-
-        $('.city').click(function (event){
-            event.stopPropagation();
-            // TODO this is only working for one single click :/
-            // event.preventDefault();
-            city_lookup_details = [city[0], city[1], city[2]];
-            getWeatherResponse(WEATHER);
-            getWeatherResponse(FORECAST);
-            storeCities(city_lookup_details);
-        });
     });
 }
 
-function updateWeatherStats(temp, humidity, speed, uvindex, iconToUse) {
-    // Update the title information.
-    // TODO this can be done neater.
+function updateWeatherStats(weatherDetails) {
+    // Creates and populates a div of the main weather stats.
     $('.city-title').text(city_lookup_details[0] + " " + moment().format("(DD/MM/YYYY)"));
-    $('.weather-icon').html('<img src="' + ICON_BASE +  iconToUse + '.png" alt="weather icon">');
+    $('.weather-icon').html('<img src="' + ICON_BASE +  weatherDetails.weather[0].icon + '.png" alt="weather icon">');
     // Updates the weather stats for the main day weather.
-    $('#deg-f').html('<span class="temp-change-units">' + temp + '</span> ' + selectUnitIndicator());
+    $('#deg-f').html('<span class="temp-change-units">' + weatherDetails.temp + '</span> ' + selectUnitIndicator());
     // start with the correct temperature indicator
-    $('#humidity').text(humidity + "%");
-    $('#knots').text(speed);
-    $('#uvi').text(uvindex);
+    $('#humidity').text(weatherDetails.humidity + "%");
+    $('#knots').text(weatherDetails.wind_speed);
+    $('#uvi').text(weatherDetails.uvi);
 }
 
 function selectUnitIndicator() {
@@ -240,7 +225,6 @@ function updateTempUnit() {
 }
 
 function displayForecast(forecast) {
-    console.log(forecast);
     // Apply an offset and get the weather for midday each day.
     // TODO this is too hardcoded.
     let fcCounter = 1;
@@ -290,14 +274,13 @@ function displayForecast(forecast) {
 // load cities
 if (retrieveCities()) {
     cities_searched = retrieveCities();
-    // displayLastSearched();
+    console.log(cities_searched);
 }
 
 $('#search-button').click(function (event) {
     event.preventDefault();
-    // Get the immediate and forecast weather reports.
+    // Get the weather.
     getWeatherResponse();
-    console.log(city_lookup_details);
     storeCities(city_lookup_details);
 });
 
@@ -312,5 +295,13 @@ $('#temp-units').click(function (event){
     updateUnitIndicator();
 })
 
-// this is being snafu.
-// displayLastSearched();
+$('.city').click(function (event){
+    event.stopPropagation();
+    // TODO this is only working for one single click :/
+    event.preventDefault();
+    city_lookup_details = [city[0], city[1], city[2], city[3], city[4]];
+    getWeatherResponse();
+    storeCities(city_lookup_details);
+});
+
+displayLastSearched();
