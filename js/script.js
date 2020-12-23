@@ -204,17 +204,22 @@ function updateWeatherStats(temp, humidity, speed, uvindex, iconToUse) {
     $('.city-title').text(city_lookup_details[0] + " " + moment().format("(DD/MM/YYYY)"));
     $('.weather-icon').html('<img src="' + ICON_BASE +  iconToUse + '.png" alt="weather icon">');
     // Updates the weather stats for the main day weather.
-    $('#deg-f').html('<span class="temp-change-units">' + temp + '</span> ');
+    $('#deg-f').html('<span class="temp-change-units">' + temp + '</span> ' + selectUnitIndicator());
     // start with the correct temperature indicator
-    if (temp_c) {
-        $('#deg-f').append('<span className="unit-indicator-deg">C</span>');
-    } else {
-        $('#deg-f').append('<span class="unit-indicator-deg">F</span>');
-    }
-    $('#humidity').text(humidity);
-    $('#humidity').append("%");
+    $('#humidity').text(humidity + "%");
     $('#knots').text(speed);
     $('#uvi').text(uvindex);
+}
+
+function selectUnitIndicator() {
+    // Returns the correct unit indicator ie F / C
+    let unitIndicator;
+    if (temp_c) {
+        unitIndicator = '<span className="unit-indicator-deg">C</span>';
+    } else {
+        unitIndicator = '<span class="unit-indicator-deg">F</span>';
+    }
+    return unitIndicator;
 }
 
 function updateUnitIndicator(unitDiv, newIndicator) {
@@ -263,7 +268,7 @@ function displayForecast(forecast) {
 
         // Offset the first element as we're fitting 5 items in a col-12
         // TODO This needs to be done dynamically.
-        if (fcCounter === 0) {
+        if (fcCounter === 1) {
             fcDiv.addClass(fcDivOffset);
         }
 
@@ -274,7 +279,7 @@ function displayForecast(forecast) {
         // Construct the list item.
         fcList.append($('<li>').text(tempDate));
         fcList.append($('<img src="' + ICON_BASE + item.weather[0].icon + '.png">'));
-        fcList.append($('<li>').html('<span class="temp-change-units">' + item.temp.max + "</span>"));
+        fcList.append($('<li>').html('<span class="temp-change-units">' + item.temp.max + "</span>" + selectUnitIndicator()));
         fcList.append($('<li>').text("Humidity " + item.humidity + " %"));
 
         // Construct the forecast card.
