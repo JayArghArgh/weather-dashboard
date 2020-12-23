@@ -137,7 +137,7 @@ function getWeatherResponse() {
         url: apiUrl,
         method: "GET"
     }).then(function(response) {
-        // initMap();
+        initMap();
         let weatherDetails = response.current;
         let forecastDetails = response.daily;
         updateWeatherStats(weatherDetails.temp, weatherDetails.humidity, weatherDetails.wind_speed, weatherDetails.uvi, weatherDetails.weather[0].icon);
@@ -306,8 +306,6 @@ $('#search-button').click(function (event) {
     event.preventDefault();
     // Get the immediate and forecast weather reports.
     getWeatherResponse();
-    // getWeatherResponse(WEATHER);
-    // getWeatherResponse(FORECAST);
     // storeCities(trimCityArray(cities_searched, city_lookup_details));
 });
 
