@@ -11,7 +11,7 @@ const SEARCH_LIMIT = 10;  // The number of searches to store in local.
 const MAX_FORECAST_DAYS = 5;
 const IND_CEL = "C&deg;";
 const IND_FAR = "F&deg;";
-const ICON_BASE = 'http://openweathermap.org/img/wn/';
+const ICON_BASE = 'https://openweathermap.org/img/wn/';
 
 // Variables
 let citiesSearched = [];
