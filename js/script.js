@@ -14,12 +14,10 @@ const IND_FAR = "F&deg;";
 const ICON_BASE = 'http://openweathermap.org/img/wn/';
 
 // Variables
-let cities_searched = [];
-let city_lookup_details;
+let citiesSearched = [];
+let cityLookupDetails;
 let autocomplete;
-let temp_c = false;  // when true, temperature units are displayed in degrees C.
-
-
+let tempC = false;  // when true, temperature units are displayed in degrees C.
 
 // Functions
 function fToDeg(tempF){
@@ -62,7 +60,7 @@ function setCity() {
         }
     });
 
-    city_lookup_details = [
+    cityLookupDetails = [
         place.address_components[0].long_name,
         setState,
         setCountry,
@@ -94,7 +92,7 @@ function geolocate() {
 // Initialize and add the map
 function initMap() {
     // Centre over the city that was searched for
-    const citySearched = { lat: city_lookup_details[3], lng: city_lookup_details[4] };
+    const citySearched = { lat: cityLookupDetails[3], lng: cityLookupDetails[4] };
     // The map, centered at the city seached for.
     const map = new google.maps.Map(document.getElementById("map"), {
         zoom: MAP_ZOOM_LEVEL,
@@ -112,10 +110,10 @@ function initMap() {
 
 function getWeatherResponse() {
     // Build the URL and collect the weather response.
-    let apiUrl = API_URL + "lat=" + city_lookup_details[3] + "&lon=" + city_lookup_details[4];
+    let apiUrl = API_URL + "lat=" + cityLookupDetails[3] + "&lon=" + cityLookupDetails[4];
 
     // Determine the units being used for the search and parse to API.
-    if (temp_c) {
+    if (tempC) {
         apiUrl += API_UNITS_C;
     } else {
         apiUrl += API_UNITS_F;
@@ -133,8 +131,8 @@ function getWeatherResponse() {
         let forecastDetails = response.daily;
         updateWeatherStats(weatherDetails);
         displayForecast(forecastDetails);
-        storeCities(city_lookup_details);
-        cities_searched = retrieveCities();
+        storeCities(cityLookupDetails);
+        citiesSearched = retrieveCities();
         displayLastSearched();
     });
 }
@@ -142,12 +140,12 @@ function getWeatherResponse() {
 function storeCities(cityArrayToStore) {
     // Updates local storage.
     // Check we're not over the limit, pop if we are.
-    if (cities_searched.length === SEARCH_LIMIT) {
-        cities_searched.pop();
+    if (citiesSearched.length === SEARCH_LIMIT) {
+        citiesSearched.pop();
     }
     // Add the new item and store.
-    cities_searched.push(cityArrayToStore);
-    localStorage.setItem(KEY_CITY, JSON.stringify(cities_searched));
+    citiesSearched.push(cityArrayToStore);
+    localStorage.setItem(KEY_CITY, JSON.stringify(citiesSearched));
 }
 
 function retrieveCities() {
@@ -155,7 +153,7 @@ function retrieveCities() {
     if (localStorage.getItem(KEY_CITY)) {
         return JSON.parse(localStorage.getItem(KEY_CITY));
     } else {
-        return false;
+        return citiesSearched;
     }
 }
 
@@ -165,29 +163,31 @@ function displayLastSearched() {
     lastSearched.empty();
     $('#search-city').val("");
     // The last item should be the current search.
-    cities_searched.forEach(function (city, index) {
-        let cityItem = $('<a href="#!">');
-        if (index === cities_searched.length - 1) {
-            cityItem.addClass("collection-item city blue active");
-        } else {
-            cityItem.addClass("collection-item city blue-text");
-        }
-        // Build the item that contains the city lookup data.
-        cityItem.text(city[0]);
-        cityItem.data("data-city", city[0])
-        cityItem.data("data-state", city[1])
-        cityItem.data("data-country", city[2])
-        cityItem.data("data-lat", city[3])
-        cityItem.data("data-lon", city[4])
+    if (citiesSearched.length > 0) {
+        citiesSearched.forEach(function (city, index) {
+            let cityItem = $('<a href="#!">');
+            if (index === citiesSearched.length - 1) {
+                cityItem.addClass("collection-item city blue active");
+            } else {
+                cityItem.addClass("collection-item city blue-text");
+            }
+            // Build the item that contains the city lookup data.
+            cityItem.text(city[0]);
+            cityItem.data("data-city", city[0])
+            cityItem.data("data-state", city[1])
+            cityItem.data("data-country", city[2])
+            cityItem.data("data-lat", city[3])
+            cityItem.data("data-lon", city[4])
 
-        // prepend it so it is on to of the lsit.
-        lastSearched.prepend(cityItem);
-    });
+            // prepend it so it is on to of the lsit.
+            lastSearched.prepend(cityItem);
+        });
+    }
 }
 
 function updateWeatherStats(weatherDetails) {
     // Creates and populates a div of the main weather stats.
-    $('.city-title').text(city_lookup_details[0] + " " + moment().format("(DD/MM/YYYY)"));
+    $('.city-title').text(cityLookupDetails[0] + " " + moment().format("(DD/MM/YYYY)"));
     $('.weather-icon').html('<img src="' + ICON_BASE +  weatherDetails.weather[0].icon + '.png" alt="weather icon">');
     // Updates the weather stats for the main day weather.
     $('#deg-f').html('<span class="temp-change-units">' + weatherDetails.temp + '</span> ' + selectUnitIndicator());
@@ -200,7 +200,7 @@ function updateWeatherStats(weatherDetails) {
 function selectUnitIndicator() {
     // Returns the correct unit indicator ie F / C
     let unitIndicator;
-    if (temp_c) {
+    if (tempC) {
         unitIndicator = '<span className="unit-indicator-deg">C</span>';
     } else {
         unitIndicator = '<span class="unit-indicator-deg">F</span>';
@@ -220,7 +220,7 @@ function updateTempUnit() {
     let newTemp;
     for ( i; i < tempHolder.length; i++){
         // convert to Celsius.
-        if (temp_c) {
+        if (tempC) {
             newTemp = fToDeg($(tempHolder[i]).text());
             updateUnitIndicator($(tempHolder[i]).siblings(), IND_CEL);
 
@@ -282,7 +282,7 @@ function displayForecast(forecast) {
 
 // Statements
 // load cities
-cities_searched = retrieveCities();
+citiesSearched = retrieveCities();
 displayLastSearched();
 
 $('#search-button').click(function (event) {
@@ -293,10 +293,10 @@ $('#search-button').click(function (event) {
 
 
 $('#temp-units').click(function (event){
-    if (temp_c) {
-        temp_c = false;
+    if (tempC) {
+        tempC = false;
     } else {
-        temp_c = true;
+        tempC = true;
     }
     updateTempUnit();
     updateUnitIndicator();
@@ -307,7 +307,7 @@ $('.city').click(function (event){
     event.preventDefault();
     let thisCityItem = $(this);
     // Grab the items lookup data so the search can be refreshed by simply clicking the item.
-    city_lookup_details = [
+    cityLookupDetails = [
         thisCityItem.data("data-city"),
         thisCityItem.data("data-state"),
         thisCityItem.data("data-country"),
