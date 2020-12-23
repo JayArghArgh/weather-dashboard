@@ -147,6 +147,7 @@ function getWeatherResponse() {
 
 function storeCities(cityArrayToStore) {
     // Updates local storage.
+    cities_searched.push(cityArrayToStore);
     localStorage.setItem(KEY_CITY, JSON.stringify(cities_searched));
 }
 
@@ -157,16 +158,6 @@ function retrieveCities() {
     } else {
         return false;
     }
-}
-
-function trimCityArray(cityArrayToTrim, cityToAdd) {
-    // keeps the recent searches to the limited amount.
-    if (cityArrayToTrim.length +1 > SEARCH_LIMIT) {
-        cityArrayToTrim.shift();
-    }
-    // add the new item
-    cityArrayToTrim.push(cityToAdd);
-    return cityArrayToTrim;
 }
 
 function displayLastSearched() {
@@ -193,7 +184,7 @@ function displayLastSearched() {
             city_lookup_details = [city[0], city[1], city[2]];
             getWeatherResponse(WEATHER);
             getWeatherResponse(FORECAST);
-            storeCities(trimCityArray(cities_searched, city_lookup_details));
+            storeCities(city_lookup_details);
         });
     });
 }
@@ -306,7 +297,8 @@ $('#search-button').click(function (event) {
     event.preventDefault();
     // Get the immediate and forecast weather reports.
     getWeatherResponse();
-    // storeCities(trimCityArray(cities_searched, city_lookup_details));
+    console.log(city_lookup_details);
+    storeCities(city_lookup_details);
 });
 
 
