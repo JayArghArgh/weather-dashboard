@@ -172,14 +172,19 @@ function displayLastSearched() {
                 cityItem.addClass("collection-item city blue-text");
             }
             // Build the item that contains the city lookup data.
-            cityItem.text(city[0]);
-            cityItem.data("data-city", city[0])
-            cityItem.data("data-state", city[1])
-            cityItem.data("data-country", city[2])
-            cityItem.data("data-lat", city[3])
-            cityItem.data("data-lon", city[4])
+            cityItem.attr('id', 'citySearched-' + index);
+            // TODO These should be stored using data() not as individual strings.
+            cityItem.attr("data-city", city[0]);
+            cityItem.attr("data-state", city[1])
+            cityItem.attr("data-country", city[2])
+            cityItem.attr("data-lat", city[3])
+            cityItem.attr("data-lon", city[4])
 
-            // prepend it so it is on to of the lsit.
+            // Set what it is we want to display. (ie City only)
+            // cityItem.text(city[0]);
+            cityItem.text(city[0] + ", " + city[1]);
+
+            // prepend it so it is on to of the list.
             lastSearched.prepend(cityItem);
         });
     }
@@ -302,17 +307,19 @@ $('#temp-units').click(function (event){
     updateUnitIndicator();
 })
 
-$('.city').click(function (event){
-    // TODO this is only working for one single click :/
+$('#last-searched').click(function (event) {
     event.preventDefault();
-    let thisCityItem = $(this);
+    event.stopPropagation();
+
+    var searchedItem = event.target;
+
     // Grab the items lookup data so the search can be refreshed by simply clicking the item.
     cityLookupDetails = [
-        thisCityItem.data("data-city"),
-        thisCityItem.data("data-state"),
-        thisCityItem.data("data-country"),
-        thisCityItem.data("data-lat"),
-        thisCityItem.data("data-lon")
+        searchedItem.getAttribute("data-city"),
+        searchedItem.getAttribute("data-state"),
+        searchedItem.getAttribute("data-country"),
+        parseFloat(searchedItem.getAttribute("data-lat")),
+        parseFloat(searchedItem.getAttribute("data-lon"))
     ];
     getWeatherResponse();
-});
+})
