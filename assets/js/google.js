@@ -1,3 +1,5 @@
+let cityLookupDetails;
+
 function initAutocomplete() {
     // Create the autocomplete object, restricting the search predictions to
     // geographical location types.

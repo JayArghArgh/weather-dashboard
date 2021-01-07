@@ -1,3 +1,7 @@
+const SEARCH_LIMIT = 10;  // The number of searches to store in local.
+const KEY_CITY = "weather_cities_searched";
+let citiesSearched = [];
+
 function storeCities(cityArrayToStore) {
     // Updates local storage.
     // Check we're not over the limit, pop if we are.
@@ -17,3 +21,5 @@ function retrieveCities() {
         return citiesSearched;
     }
 }
+
+citiesSearched = retrieveCities();
