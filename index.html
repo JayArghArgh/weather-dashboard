@@ -37,8 +37,13 @@
                         <form>
                             <div class="row">
                                 <div class="input-field col search-entry s11 m11 l11">
-                                    <input id="search-city" class="validate" onFocus="geolocate()" type="text" />
-                                    <a href="#!"><i id="search-button" class="material-icons prefix">location_searching</i></a>
+                                    <!-- wrap in form to allow enter submission on enter button -->
+                                    <form action="" method="get" id="searchFormID">
+                                        <input id="search-city" class="validate" onFocus="geolocate()" type="text" />
+                                        <div class="col s3" id="search-button">
+                                            <button class="btn-floating waves-effect waves-light pulse transparent black-text" id="searchBtn" title="click to search">GO</button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </form>
