@@ -5,7 +5,7 @@ Can be viewed at the following link(s):
 - repo on github https://github.com/JayArghArgh/weather-dashboard
 - github page: https://jayarghargh.github.io/weather-dashboard/
 
-![Screenshot of weather dashboard](images/screenshot.png)
+![Screenshot of weather dashboard](assets/images/screenshot.png)
 
 ## Requirements
 - Google maps API KEY
