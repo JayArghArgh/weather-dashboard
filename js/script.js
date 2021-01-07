@@ -249,18 +249,12 @@ function displayForecast(forecast) {
 
     while (fcCounter < MAX_FORECAST_DAYS + 1) {
         let item = forecast[fcCounter];
-        let fcDivOffset = "offset-l1 offset-m1";
         let fcDiv = $('<div>').addClass("col s12 m2 l2");
         let cardHz = $('<div>').addClass("card horizontal");
         let cardStacked = $('<div>').addClass("card-stacked");
         let cardContent = $('<div>').addClass("card-content");
         let fcList = $('<ul>');
 
-        // Offset the first element as we're fitting 5 items in a col-12
-        // TODO This needs to be done dynamically.
-        if (fcCounter === 1) {
-            fcDiv.addClass(fcDivOffset);
-        }
 
         // Extract and format the date.
         // TODO Find out why moment ws too painful for this simple string. #blamingTheTools!
